@@ -1,17 +1,13 @@
-from datetime import timedelta
-
-from fastapi import HTTPException, Depends, Request, APIRouter
+from fastapi import HTTPException, Depends, APIRouter
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.responses import Response
 
 from app import models, schemas
 from app.config import settings
 from app.database import get_db
 from app.utils import hash_password, verify_password, create_access_token, \
     create_refresh_token
-
 
 # Router and crypt context
 
@@ -56,10 +52,12 @@ async def create_user(payload: schemas.CreateUserSchema, db: Session = Depends(g
         )
 
     # Define payload
-    payload.password = hash_password(payload.password)
-    payload.verified = True
-    payload.email = EmailStr(payload.email.lower())
-    new_user = models.User(**payload.dict())
+    user_kwargs = {
+        "hashed_password": hash_password(payload.password),
+        "verified": True,
+        "email": EmailStr(payload.email.lower()),
+    }
+    new_user = models.User(**user_kwargs)
 
     # Add user to database and return
     db.add(new_user)
