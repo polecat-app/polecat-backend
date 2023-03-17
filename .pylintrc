@@ -1,0 +1,10 @@
+[MASTER]
+max-line-length=88
+[MESSAGES CONTROL]
+disable=import-error,
+        missing-docstring,
+        unused-argument,
+        too-few-public-methods,
+        redundant-keyword-arg,
+        too-many-locals,
+        raise-missing-from,

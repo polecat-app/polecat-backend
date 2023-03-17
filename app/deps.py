@@ -1,5 +1,5 @@
-from typing import Union, Any, Dict
 from datetime import datetime
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
@@ -12,21 +12,33 @@ from app.database import get_db
 from app.schemas import TokenPayload, UserBaseSchema
 
 
-reuseable_oauth = OAuth2PasswordBearer(
-    tokenUrl="/login",
-    scheme_name="JWT"
-)
+# OAuth2 scheme for tokens
+reuseable_oauth = OAuth2PasswordBearer(tokenUrl="/login", scheme_name="JWT")
 
 
-async def get_current_user(token: str = Depends(reuseable_oauth), db: Session = Depends(get_db)) -> UserBaseSchema:
+async def get_current_user_from_refresh_token(
+    token: str = Depends(reuseable_oauth), database: Session = Depends(get_db)
+) -> UserBaseSchema:
+    """Get current user from refresh token."""
+    return await get_current_user(True, token, database)
+
+
+async def get_current_user_from_access_token(
+    token: str = Depends(reuseable_oauth), database: Session = Depends(get_db)
+) -> UserBaseSchema:
+    """Get current user from access token."""
+    return await get_current_user(False, token, database)
+
+
+async def get_current_user(
+    refresh: bool, token: str, database: Session
+) -> UserBaseSchema:
     """Try to get current user from jwt."""
 
     try:
-
         # Decode token
-        payload = jwt.decode(
-            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
+        key = settings.JWT_SECRET_REFRESH_KEY if refresh else settings.JWT_SECRET_KEY
+        payload = jwt.decode(token, key, algorithms=[settings.JWT_ALGORITHM])
         token_data = TokenPayload(**payload)
 
         # Check if token is expired
@@ -34,26 +46,26 @@ async def get_current_user(token: str = Depends(reuseable_oauth), db: Session = 
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token expired",
-                headers={
-                    "WWW-Authenticate": "Bearer"},
+                headers={"WWW-Authenticate": "Bearer"},
             )
 
-    except(jwt.JWTError, ValidationError):
+    except (jwt.JWTError, ValidationError):
 
         # Raise exception if token is invalid
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
-            headers={
-                "WWW-Authenticate": "Bearer"},
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     # Try to get user from database
-    user = db.query(models.User).filter(models.User.email == token_data.sub).first()
+    user = (
+        database.query(models.User).filter(models.User.email == token_data.sub).first()
+    )
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find user",
         )
 
-    return UserBaseSchema(email=user)
+    return UserBaseSchema(email=user.email)

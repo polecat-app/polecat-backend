@@ -28,9 +28,7 @@ def create_access_token(subject: Union[str, Any], expires_delta: int = None) -> 
             minutes=settings.ACCESS_TOKEN_EXPIRES_IN
         )
 
-    to_encode = {
-        "exp": expires_delta,
-        "sub": str(subject)}
+    to_encode = {"exp": expires_delta, "sub": str(subject)}
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, settings.JWT_ALGORITHM)
     return encoded_jwt
 
@@ -44,9 +42,7 @@ def create_refresh_token(subject: Union[str, Any], expires_delta: int = None) ->
             minutes=settings.REFRESH_TOKEN_EXPIRES_IN
         )
 
-    to_encode = {
-        "exp": expires_delta,
-        "sub": str(subject)}
+    to_encode = {"exp": expires_delta, "sub": str(subject)}
     encoded_jwt = jwt.encode(
         to_encode, settings.JWT_SECRET_REFRESH_KEY, settings.JWT_ALGORITHM
     )

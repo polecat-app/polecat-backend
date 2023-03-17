@@ -5,6 +5,7 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     """Base settings containing environment variables."""
+
     DATABASE_PORT: int
     POSTGRES_PASSWORD: str
     POSTGRES_USER: str
