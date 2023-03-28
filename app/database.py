@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from .config import settings
 from google.cloud.sql.connector import Connector, IPTypes
 import sqlalchemy
+
+from .config import settings
 
 
 def connect_with_connector() -> sqlalchemy.engine.base.Engine:
@@ -22,7 +23,7 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
             user=settings.DB_USER,
             password=settings.DB_PASS,
             db=settings.DB_NAME,
-            ip_type=IPTypes.PRIVATE if settings.PRIVATE_IP else IPTypes.PUBLIC,
+            ip_type=IPTypes.PUBLIC,
         )
         return conn
 
