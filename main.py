@@ -29,4 +29,4 @@ async def get_me(user: User = Depends(get_current_user_from_access_token)):
 
 # RUN!!!
 if __name__ == "__main__":
-    uvicorn.run(app, port=int(8086), host="127.0.0.1")
+    uvicorn.run(app, port=int(8080), host="0.0.0.0")
