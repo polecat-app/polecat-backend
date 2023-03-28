@@ -54,11 +54,14 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
 
 # An Engine, which the Session will use for connection resources,
 # specifying location and type of database
-SQLALCHEMY_DATABASE_URL = (
-    f"postgresql://{settings.DB_USER}:{settings.DB_PASS}@"
-    f"{settings.INSTANCE_CONNECTION_NAME}/{settings.DB_NAME}"
-)
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+if settings.HOST:
+    SQLALCHEMY_DATABASE_URL = (
+        f"postgresql://{settings.DB_USER}:{settings.DB_PASS}@"
+        f"{settings.INSTANCE_CONNECTION_NAME}/{settings.DB_NAME}"
+    )
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+else:
+    engine = connect_with_connector()
 
 # One central factory method to create a session. When SessionLocal() is called,
 # this method creates a session, so it is not necessary to pass engine every time
