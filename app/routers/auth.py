@@ -8,7 +8,7 @@ from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user_from_refresh_token
 from app.models import User
-from app.schemas import TokenBase
+from app.schemas import TokenResponse
 from app.utils import (
     hash_password,
     verify_password,
@@ -111,7 +111,7 @@ async def login(payload: schemas.LoginUserSchema, database: Session = Depends(ge
     }
 
 
-@router.get("/refresh", summary="Refresh token", response_model=TokenBase)
+@router.get("/refresh", summary="Refresh token", response_model=TokenResponse)
 async def refresh_token(user: User = Depends(get_current_user_from_refresh_token)):
     """Refresh access token."""
     if not user:
@@ -119,4 +119,7 @@ async def refresh_token(user: User = Depends(get_current_user_from_refresh_token
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="The user belonging to this token no logger exist",
         )
-    return {"access_token": create_access_token(user.email)}
+    return {
+        "access_token": create_access_token(user.email),
+        "refresh_token": create_refresh_token(user.email),
+    }
