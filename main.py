@@ -7,7 +7,7 @@ from app.config import settings
 from app.database import engine
 from app.deps import get_current_user_from_access_token
 from app.models import User
-from app.routers import auth
+from app.routers import auth, save
 from app.schemas import UserBaseSchema
 
 # Setup
@@ -17,6 +17,7 @@ models.Base.metadata.create_all(bind=engine)  # Create ORM tables if not exist
 
 # Include routers in app
 app.include_router(auth.router)
+app.include_router(save.router)
 
 
 @app.get(
@@ -25,9 +26,12 @@ app.include_router(auth.router)
     response_model=UserBaseSchema,
 )
 async def get_me(user: User = Depends(get_current_user_from_access_token)):
-    return user
+    return user.email
 
 
 # RUN!!!
 if __name__ == "__main__":
-    uvicorn.run(app, port=settings.PORT or 8080, host=settings.HOST or "0.0.0.0")
+    if settings.HOST:
+        uvicorn.run("main:app", port=8080, host=settings.HOST, reload=True)
+    else:
+        uvicorn.run(app, port=8080, host="0.0.0.0")

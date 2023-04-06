@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app import models
 from app.config import settings
 from app.database import get_db
+from app.models import User
 from app.schemas import TokenPayload, UserBaseSchema
 
 
@@ -18,21 +19,21 @@ reuseable_oauth = OAuth2PasswordBearer(tokenUrl="/login", scheme_name="JWT")
 
 async def get_current_user_from_refresh_token(
     token: str = Depends(reuseable_oauth), database: Session = Depends(get_db)
-) -> UserBaseSchema:
+) -> User:
     """Get current user from refresh token."""
     return await get_current_user(True, token, database)
 
 
 async def get_current_user_from_access_token(
     token: str = Depends(reuseable_oauth), database: Session = Depends(get_db)
-) -> UserBaseSchema:
+) -> User:
     """Get current user from access token."""
     return await get_current_user(False, token, database)
 
 
 async def get_current_user(
     refresh: bool, token: str, database: Session
-) -> UserBaseSchema:
+) -> User:
     """Try to get current user from jwt."""
 
     try:
@@ -68,4 +69,4 @@ async def get_current_user(
             detail="Could not find user",
         )
 
-    return UserBaseSchema(email=user.email)
+    return user

@@ -5,6 +5,7 @@ class UserBaseSchema(BaseModel):
     """Base schema for user model."""
 
     email: EmailStr
+    id: int
 
 
 class CreateUserSchema(UserBaseSchema):
@@ -37,3 +38,9 @@ class TokenPayload(BaseModel):
 
     exp: int
     sub: str
+
+
+class LikeAnimal(BaseModel):
+    """Schema for liking animal."""
+
+    animal_id: int
