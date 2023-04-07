@@ -10,7 +10,7 @@ from app import models
 from app.config import settings
 from app.database import get_db
 from app.models import User
-from app.schemas import TokenPayload, UserBaseSchema
+from app.schemas import TokenPayload
 
 
 # OAuth2 scheme for tokens
@@ -31,9 +31,7 @@ async def get_current_user_from_access_token(
     return await get_current_user(False, token, database)
 
 
-async def get_current_user(
-    refresh: bool, token: str, database: Session
-) -> User:
+async def get_current_user(refresh: bool, token: str, database: Session) -> User:
     """Try to get current user from jwt."""
 
     try:

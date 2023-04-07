@@ -9,6 +9,7 @@ from app.database import Base
 
 class User(Base):
     """Database model for users."""
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -32,6 +33,7 @@ class User(Base):
 
 class Animal(Base):
     """Database model for animals."""
+
     __tablename__ = "animals"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -47,6 +49,7 @@ class Animal(Base):
 
 class UserLike(Base):
     """Database model for likes."""
+
     __tablename__ = "likes"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -56,6 +59,7 @@ class UserLike(Base):
 
 class UserSee(Base):
     """Database model for sees."""
+
     __tablename__ = "seen"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -65,6 +69,7 @@ class UserSee(Base):
 
 class AnimalTag(Base):
     """Database model for animal - tag relationship."""
+
     __tablename__ = "animal_tags"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -74,6 +79,7 @@ class AnimalTag(Base):
 
 class Tag(Base):
     """Database model for tags."""
+
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True, index=True)
