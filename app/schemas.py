@@ -40,7 +40,13 @@ class TokenPayload(BaseModel):
     sub: str
 
 
-class LikeAnimal(BaseModel):
-    """Schema for liking animal."""
+class Save(BaseModel):
+    """Schema for save."""
+
+    method: str  # like or see
+
+
+class SaveAnimal(Save):
+    """Schema for saving animal."""
 
     animal_id: int

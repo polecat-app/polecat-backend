@@ -18,8 +18,7 @@ class User(Base):
     verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)
-    user_likes = relationship("UserLike", cascade="all,delete", backref="users")
-    user_seen = relationship("UserSee", cascade="all,delete", backref="users")
+    user_saves = relationship("UserSave", cascade="all,delete", backref="users")
 
     class Config:
         validate_assignment = True
@@ -43,26 +42,16 @@ class Animal(Base):
     image_url = Column(String, unique=False)
     rangeImage_url = Column(String, unique=False)
     animal_tags = relationship("AnimalTag", cascade="all,delete", backref="animals")
-    user_likes = relationship("UserLike", cascade="all,delete", backref="animals")
-    user_seen = relationship("UserSee", cascade="all,delete", backref="animals")
+    user_saves = relationship("UserSave", cascade="all,delete", backref="animals")
 
 
-class UserLike(Base):
-    """Database model for likes."""
+class UserSave(Base):
+    """Base model for saving animals."""
 
-    __tablename__ = "likes"
-
-    id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    animal_id = Column(Integer, ForeignKey("animals.id"))
-
-
-class UserSee(Base):
-    """Database model for sees."""
-
-    __tablename__ = "seen"
+    __tablename__ = "saved_animals"
 
     id = Column(Integer, primary_key=True, index=True)
+    method = Column(String, unique=False)  # like or see
     owner_id = Column(Integer, ForeignKey("users.id"))
     animal_id = Column(Integer, ForeignKey("animals.id"))
 

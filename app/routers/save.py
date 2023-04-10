@@ -5,7 +5,7 @@ from starlette import status
 from app import schemas
 from app.database import get_db
 from app.deps import get_current_user_from_access_token
-from app.models import User, UserLike, Animal
+from app.models import User, UserSave, Animal
 
 # Router
 router = APIRouter(
@@ -13,28 +13,27 @@ router = APIRouter(
 )
 
 
-@router.get("/liked")
-async def get_liked_animals(
+@router.get("/")
+async def get_saved_animals(
+    payload: schemas.Save,
     user: User = Depends(get_current_user_from_access_token),
     database: Session = Depends(get_db),
 ):
-    """Get all liked animals for a user."""
-
-    # Query database for liked animals with user id, or raise exception
-    animal_ids = [user_like.animal_id for user_like in user.user_likes]
+    """Get all saved animals for a user."""
+    animal_ids = [user_save.animal_id for user_save in user.user_saves if user_save.method == payload.method]
     animals = database.query(Animal).filter(Animal.id.in_(animal_ids)).all()
     if not animals:
-        raise HTTPException(status_code=404, detail="No liked animals")
+        raise HTTPException(status_code=404, detail=f"No saved animals with method {payload.method}")
     return animals
 
 
-@router.post("/liked")
-async def like_animal(
-    payload: schemas.LikeAnimal,
+@router.post("/")
+async def save_animal(
+    payload: schemas.SaveAnimal,
     user: User = Depends(get_current_user_from_access_token),
     database: Session = Depends(get_db),
 ):
-    """Like an animal."""
+    """Save an animal."""
 
     # Check if animal exists, else raise conflict error
     animal = database.query(Animal).filter(Animal.id == payload.animal_id).first()
@@ -44,47 +43,48 @@ async def like_animal(
         )
 
     # Check if animal is not liked, else raise conflict error
-    user_like = (
-        database.query(UserLike)
-        .filter(UserLike.owner_id == user.id)
-        .filter(UserLike.animal_id == payload.animal_id)
+    user_save = (
+        database.query(UserSave)
+        .filter(UserSave.owner_id == user.id)
+        .filter(UserSave.method == payload.method)
+        .filter(UserSave.animal_id == payload.animal_id)
         .first()
     )
-    if user_like:
+    if user_save:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Animal already liked"
         )
 
-    user_like = UserLike()
-    user.user_likes.append(user_like)
-    animal.user_likes.append(user_like)
-    database.add(user_like)
+    user_save = UserSave(method=payload.method)
+    user.user_saves.append(user_save)
+    animal.user_saves.append(user_save)
+    database.add(user_save)
     database.commit()
-    return {"animal_id": payload.animal_id}
+    return {"animal_id": payload.animal_id, "method": payload.method}
 
 
-@router.delete("/liked")
-async def delete_liked_animal(
-    payload: schemas.LikeAnimal,
+@router.delete("/")
+async def delete_saved_animal(
+    payload: schemas.SaveAnimal,
     user: User = Depends(get_current_user_from_access_token),
     database: Session = Depends(get_db),
 ):
-    """Get all liked animals for a user."""
-    print(user.user_likes)
+    """Delete saved animal."""
 
-    # Query database for to do with same id, or raise exception
-    user_like = (
-        database.query(UserLike)
-        .filter(UserLike.owner_id == user.id)
-        .filter(UserLike.animal_id == payload.animal_id)
+    # Get saved animal
+    user_save = (
+        database.query(UserSave)
+        .filter(UserSave.owner_id == user.id)
+        .filter(UserSave.method == payload.method)
+        .filter(UserSave.animal_id == payload.animal_id)
         .first()
     )
-    if user_like:
-        # Add to do model to database, overwriting previous model with same id
-        database.delete(user_like)
-        database.commit()
-        return f"deleted liked animal with id {payload.animal_id}"
 
+    # Delete saved animal or raise exception
+    if user_save:
+        database.delete(user_save)
+        database.commit()
+        return f"Deleted saved animal with method {payload.method} and id {payload.animal_id}"
     raise HTTPException(
-        status_code=404, detail=f"Animal with id {payload.animal_id} is not liked"
+        status_code=404, detail=f"Animal with id {payload.animal_id} is not saved"
     )
