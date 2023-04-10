@@ -9,7 +9,7 @@ from app.models import User, UserSave, Animal
 
 # Router
 router = APIRouter(
-    prefix="/save", tags=["save"], responses={401: {"user": "Not authorized"}}
+    prefix="/save", tags=["save"], responses={status.HTTP_401_UNAUTHORIZED: {"user": "Not authorized"}}
 )
 
 
@@ -23,7 +23,7 @@ async def get_saved_animals(
     animal_ids = [user_save.animal_id for user_save in user.user_saves if user_save.method == payload.method]
     animals = database.query(Animal).filter(Animal.id.in_(animal_ids)).all()
     if not animals:
-        raise HTTPException(status_code=404, detail=f"No saved animals with method {payload.method}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No saved animals with method {payload.method}")
     return animals
 
 
@@ -86,5 +86,5 @@ async def delete_saved_animal(
         database.commit()
         return f"Deleted saved animal with method {payload.method} and id {payload.animal_id}"
     raise HTTPException(
-        status_code=404, detail=f"Animal with id {payload.animal_id} is not saved"
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"Animal with id {payload.animal_id} is not saved"
     )
