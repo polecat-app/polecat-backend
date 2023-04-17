@@ -20,15 +20,6 @@ app.include_router(auth.router)
 app.include_router(save.router)
 
 
-@app.get(
-    "/me",
-    summary="Get details of currently logged in user",
-    response_model=UserBaseSchema,
-)
-async def get_me(user: User = Depends(get_current_user_from_access_token)):
-    return user.email
-
-
 # RUN!!!
 if __name__ == "__main__":
     if settings.HOST:
